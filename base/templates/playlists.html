@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-5" id="playlistList">
+<h3 class="mb-3">Playlists</h3>
+<div class="row">
+  <div class="col-auto">
+    <a href="{% url 'create-playlist' %}" class="btn btn-primary mb-4"><i class="bi bi-plus-lg"></i></a>
+  </div>
+  <div class="col">
+    <input class="search form-control mb-4" placeholder="Search by title...">
+  </div>
+</div>
+<div class="row list">
+    {% for playlist in playlists %}
+      <div class="col-6 col-md-3 mb-3" onclick="window.location.href='{% url 'playlist' playlist.id %}'">
+        <div class="card" style="cursor: pointer;">
+          <div class="card-body">
+            <h5 class="card-title name"><b>{{ playlist.title }}</b></h5>
+            <p class="card-subtitle">{{playlist.songs.count}} Song(s)</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+</div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+<script>
+  const options = {
+    valueNames: ['name']
+  };
+  const userList = new List('playlistList', options);
+</script>
+{% endblock scripts %}

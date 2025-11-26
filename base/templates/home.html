@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-5 mb-5" id="itemsList">
+  {% if page_title %}
+  <h3 class="mb-3">{{ page_title }}</h3>
+  {% endif %}
+  <!-- Search input -->
+  <input class="search form-control mb-4" placeholder="Search by title...">
+
+  <!-- Card Grid -->
+  <div class="row list">
+    {% for item in items %}
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
+        <div class="card rounded p-0"
+            {% if item.type == 'song' %} data-bs-toggle="modal" data-bs-target="#itemModel{{ item.id }}"
+            {% else %} onclick="window.location.href='{% url 'album' item.id %}'" {% endif %}
+            style="cursor: pointer;">
+
+          {% if item.favorite %}
+          <span class="position-absolute top-0 start-100 translate-middle bg-danger d-flex justify-content-center align-items-center"
+                style="width: 32px; height: 32px; border-radius: 50%;">
+            <i class="bi bi-heart-fill text-white" style="font-size: 1rem;"></i>
+            <span class="visually-hidden">favorite</span>
+          </span>
+          {% endif %}
+          <img src="{% if item.type == 'song' %}{{ item.single_image }}{% else %}{{ item.album_image }}{% endif %}"
+               class="card-img-top" alt="">
+
+          <div class="card-body">
+            <p class="card-title m-0 name"><b>{{ item.title }}</b></p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modals for songs -->
+{% for item in items %}
+{% if item.type == 'song' %}
+<div class="modal fade" id="itemModel{{item.id}}" tabindex="-1" aria-labelledby="itemModel{{item.id}}Label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="itemModel{{item.id}}Label">{{ item.title }}</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        {% if item.single_image %}
+        <img src="{{ item.single_image }}" class="rounded mb-3" width="150">
+        {% endif %}
+        <p class="mb-1"><strong>Artist:</strong> {{ item.artist }}</p>
+      </div>
+      <div class="modal-footer">
+        {% if item.favorite %}
+          <a href="{% url 'song-favorite' item.id %}" class="btn btn-danger"><i class="bi bi-heart-fill"></i></a>
+        {% else %}
+          <a href="{% url 'song-favorite' item.id %}" class="btn btn-outline-danger"><i class="bi bi-heart"></i></a>
+        {% endif %}
+        <a href="{% url 'edit-song' item.id %}" class="btn btn-primary"><i class="bi bi-pencil-fill"></i></a>
+        <a href="{% url 'update-song-playlists' item.id %}?next={{ request.path }}" class="btn btn-outline-warning"><i class="bi bi-bookmark-plus-fill"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock content %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+<script>
+  const options = {
+    valueNames: ['name']
+  };
+  const userList = new List('itemsList', options);
+</script>
+{% endblock scripts %}

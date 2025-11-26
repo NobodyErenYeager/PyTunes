@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+  <h2>{{ album.title }}</h2>
+
+  <div class="row mt-3 mb-5 align-items-start">
+    <!-- Album Image -->
+    <div class="col-12 col-md-4 mb-3">
+        {% if album.album_image %}
+        <img src="{{ album.album_image }}" class="img-fluid rounded w-100 mb-3">
+        {% endif %}
+        <div class="row">
+            <div class="col-auto">
+                {% if album.favorite %}
+                    <a href="{% url 'album-favorite' album.id %}" class="btn btn-danger"><i class="bi bi-heart-fill"></i></a>
+                {% else %}
+                    <a href="{% url 'album-favorite' album.id %}" class="btn btn-outline-danger"><i class="bi bi-heart"></i></a>
+                {% endif %}
+            </div>
+            <div class="col-auto">
+                <a href="{% url 'edit-album' album.id %}" class="btn btn-primary"><i class="bi bi-pencil-fill"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Song List -->
+    <div class="col-12 col-md-8">
+        <ul class="list-group">
+            {% for song in album.songs.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-start {% if song.favorite %}list-group-item-success{% endif %}">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold">{{ song.title }}</div>
+                    {{ song.artist }}
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% if song.favorite %}
+                        <li><a href="{% url 'song-favorite' song.id %}" class="dropdown-item"><i class="bi bi-heartbreak-fill"></i> Remove from favorite</a></li>
+                        {% else %}
+                        <li><a href="{% url 'song-favorite' song.id %}" class="dropdown-item"><i class="bi bi-heart-fill"></i> Add to favorite</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'update-song-playlists' song.id %}?next={{ request.path }}" class="dropdown-item"><i class="bi bi-bookmark-plus-fill"></i> Add to playlist</a></li>
+                        <li><a href="{% url 'edit-song' song.id %}" class="dropdown-item"><i class="bi bi-pencil-fill"></i> Edit</a></li>
+                    </ul>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+  </div>
+</div>
+{% endblock content %}

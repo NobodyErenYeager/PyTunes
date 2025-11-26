@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+<style>
+    /* Default (mobile) */
+    .audio-wrapper audio {
+        width: 250px;
+    }
+
+    /* Small devices (landscape phones, ≥576px) */
+    @media (min-width: 576px) {
+        .audio-wrapper audio {
+            width: 300px;
+        }
+    }
+
+    /* Medium devices (tablets, ≥768px) */
+    @media (min-width: 768px) {
+        .audio-wrapper audio {
+            width: 350px;
+        }
+    }
+
+    /* Large devices (desktop, ≥992px) */
+    @media (min-width: 992px) {
+        .audio-wrapper audio {
+            width: 400px;
+        }
+    }
+
+    /* Extra large devices (≥1200px) */
+    @media (min-width: 1200px) {
+        .audio-wrapper audio {
+            width: 450px;
+        }
+    }
+</style>
+{% endblock styles %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-bottom mt-5">
+    <div class="container-fluid d-flex align-items-center">
+
+        <div class="container-fluid p-0 d-flex align-items-center">
+            <a class="navbar-brand d-flex align-items-center">
+                <img src="" class="rounded me-2"
+                     width="50px" id="songImage" alt="">
+                <span class="ms-1" id="songName"></span>
+            </a>
+        </div>
+
+        <ul class="navbar-nav d-flex flex-row flex-nowrap align-items-center mb-2 mb-lg-0">
+
+            <li class="nav-item d-flex align-items-center">
+                <button type="button" class="btn btn-dark me-1 p-2" onclick="previousSong()">
+                    <i class="bi bi-caret-left-fill"></i>
+                </button>
+            </li>
+
+            <li class="nav-item d-flex align-items-center">
+                <button type="button" id="playButton" class="btn btn-dark ms-1 me-1 p-2" onclick="playSong()">
+                    <i class="bi bi-play-circle-fill"></i>
+                </button>
+                <div class="audio-wrapper mt-1">
+                    <audio src="" id="audioPlayer" class="me-1"></audio>
+                </div>
+            </li>
+
+            <li class="nav-item d-flex align-items-center">
+                <button type="button" class="btn btn-dark ms-1 me-1 p-2" onclick="nextSong()">
+                    <i class="bi bi-caret-right-fill"></i>
+                </button>
+            </li>
+
+            <li class="nav-item d-flex align-items-center">
+                <button type="button" class="btn btn-dark me-1 p-2" data-bs-toggle="modal" data-bs-target="#playQueueModel"><i class="bi bi-view-list"></i></button>
+            </li>
+        </ul>
+
+    </div>
+</nav>
+
+<div class="modal fade" id="playQueueModel" tabindex="-1" aria-labelledby="playQueueModelTitle">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="playQueueModelTitle">Play Queue</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="playQueueBody">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="clearQueue()"><i class="bi bi-trash-fill"></i></button>
+                <button type="button" class="btn btn-warning" onclick="shuffleEntirePlaylist()"><i class="bi bi-infinity"></i></button>
+                <button type="button" class="btn btn-primary" onclick="shufflePlaylist()"><i class="bi bi-shuffle"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5 mb-5" id="songsList">
+    <div class="row">
+        <div class="col-auto">
+            <button type="button" class="btn btn-primary" onclick="playAll()"><i class="bi bi-play-circle-fill"></i></button>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-warning" onclick="shuffleAll()"><i class="bi bi-shuffle"></i></button>
+        </div>
+        <div class="col">
+            <input class="search form-control mb-4" placeholder="Search by title...">
+        </div>
+    </div>
+    <ul class="list-group list-group-flush list mb-3">
+        {% for song in songs %}
+        <li class="list-group-item d-flex justify-content-between align-items-start"
+            data-song-info='{"title": "{{song.title}}", "image": "{{song.single_image}}", "url": "{{song.play_url}}"}'
+            id="songId-{{song.id}}"
+        >
+            <div class="me-auto row">
+                <div class="ps-1 col-auto">
+                    <div class="me-auto">
+                        <img src="{{ song.single_image }}" class="rounded" width="50" alt="">
+                    </div>
+                </div>
+                <div class="ps-0 col">
+                    <div class="fw-bold name">{{song.title}}</div>
+                    <p class="mb-0 fst-italic album">{{song.album}}</p>
+                    {% if song.artist %}
+                        <p class="mb-0 artist">{{song.artist}}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <button class="dropdown-item" onclick="addToPlayQueue('songId-{{song.id}}')">
+                            <i class="bi bi-plus-square-fill me-2"></i>Add to Queue
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" onclick="nextInPlayQueue('songId-{{song.id}}')">
+                            <i class="bi bi-plus-square me-2"></i>Play Next
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        {% empty %}
+        <p>No songs in this list</p>
+        {% endfor %}
+    </ul>
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+{% endblock content %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+<script>
+    const options = {
+        valueNames: ['name', 'album', 'artist'],
+    };
+    const userList = new List('songsList', options);
+
+    const audioPlayer = document.getElementById('audioPlayer');
+    const songImage = document.getElementById('songImage');
+    const songName = document.getElementById('songName');
+    const playButton = document.getElementById('playButton');
+
+    let currentSong = {};
+    let playedQueue = [];
+    let upcomingQueue = [];
+    let defaultPlayQueue = {{default_play_queue|safe}};
+
+    function nextInPlayQueue(songId) {
+        const songElement = document.getElementById(songId);
+        // console.log(songElement.getAttribute('data-song-info'));
+        const songInfo = JSON.parse(songElement.getAttribute('data-song-info'));
+        // console.log(songInfo);
+        upcomingQueue.unshift(songInfo);
+        playQueueBodyView();
+        // console.log('Upcoming Queue:', upcomingQueue);
+    }
+
+    function addToPlayQueue(songId) {
+        const songElement = document.getElementById(songId);
+        // console.log(songElement.getAttribute('data-song-info'));
+        const songInfo = JSON.parse(songElement.getAttribute('data-song-info'));
+        // console.log(songInfo);
+        upcomingQueue.push(songInfo);
+        playQueueBodyView();
+        // console.log(JSON.stringify(upcomingQueue));
+    }
+
+    function playSong() {
+        if (upcomingQueue.length === 0) {
+            alert('No songs in the play queue!');
+            return;
+        }
+        else {
+            currentSong = upcomingQueue.shift();
+            audioPlayer.src = currentSong.url;
+            songImage.src = currentSong.image;
+            songName.innerHTML = currentSong.title;
+            audioPlayer.play();
+            audioPlayer.setAttribute('controls', 'controls');
+            playButton.style.display = 'none';
+            playQueueBodyView();
+        }
+    }
+
+    function playQueueBodyView() {
+        const playQueueBody = document.getElementById('playQueueBody');
+        playQueueBody.innerHTML = '';
+
+        if (playedQueue.length > 0) {
+            const playedHeader = document.createElement('h5');
+            playedHeader.textContent = 'Played';
+            playQueueBody.appendChild(playedHeader);
+
+            const playedList = document.createElement('ul');
+            playedList.classList.add('list-group', 'list-group-flush', 'mb-3');
+
+            playedQueue.forEach((song, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
+
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('me-auto', 'row');
+
+                const imgColDiv = document.createElement('div');
+                imgColDiv.classList.add('ps-1', 'col-auto');
+
+                const imgDiv = document.createElement('div');
+                imgDiv.classList.add('me-auto');
+
+                const img = document.createElement('img');
+                img.src = song.image;
+                img.width = 50;
+                img.classList.add('rounded');
+                imgDiv.appendChild(img);
+                imgColDiv.appendChild(imgDiv);
+
+                const titleColDiv = document.createElement('div');
+                titleColDiv.classList.add('ps-0', 'col');
+                const titleDiv = document.createElement('div');
+                titleDiv.classList.add('fw-bold');
+                titleDiv.textContent = song.title;
+                titleColDiv.appendChild(titleDiv);
+                itemDiv.appendChild(imgColDiv);
+                itemDiv.appendChild(titleColDiv);
+
+                listItem.appendChild(itemDiv);
+                playedList.appendChild(listItem);
+            });
+            playQueueBody.appendChild(playedList);
+        }
+
+        if (upcomingQueue.length > 0) {
+            const upcomingHeader = document.createElement('h5');
+            upcomingHeader.textContent = 'Upcoming';
+            playQueueBody.appendChild(upcomingHeader);
+
+            const upcomingList = document.createElement('ul');
+            upcomingList.classList.add('list-group', 'list-group-flush', 'mb-3');
+
+            upcomingQueue.forEach((song, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
+
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('me-auto', 'row');
+
+                const imgColDiv = document.createElement('div');
+                imgColDiv.classList.add('ps-1', 'col-auto');
+
+                const imgDiv = document.createElement('div');
+                imgDiv.classList.add('me-auto');
+
+                const img = document.createElement('img');
+                img.src = song.image;
+                img.width = 50;
+                img.classList.add('rounded');
+                imgDiv.appendChild(img);
+                imgColDiv.appendChild(imgDiv);
+
+                const titleColDiv = document.createElement('div');
+                titleColDiv.classList.add('ps-0', 'col');
+                const titleDiv = document.createElement('div');
+                titleDiv.classList.add('fw-bold');
+                titleDiv.textContent = song.title;
+                titleColDiv.appendChild(titleDiv);
+                itemDiv.appendChild(imgColDiv);
+                itemDiv.appendChild(titleColDiv);
+
+                const dropdownDiv = document.createElement('div');
+                dropdownDiv.classList.add('dropdown');
+
+                const dropdownButton = document.createElement('button');
+                dropdownButton.classList.add('btn', 'btn-dark');
+                dropdownButton.setAttribute('type', 'button');
+                dropdownButton.setAttribute('data-bs-toggle', 'dropdown');
+                dropdownButton.setAttribute('aria-expanded', 'false');
+                dropdownButton.innerHTML = '<i class="bi bi-three-dots-vertical"></i>';
+
+                const dropdownMenu = document.createElement('ul');
+                dropdownMenu.classList.add('dropdown-menu');
+                const deleteItem = document.createElement('li');
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('dropdown-item');
+                deleteButton.innerHTML = '<i class="bi bi-trash3-fill me-2"></i>Remove from Queue';
+                deleteButton.onclick = function() {
+                    upcomingQueue.splice(index, 1);
+                    playQueueBodyView();
+                };
+                deleteItem.appendChild(deleteButton);
+                dropdownMenu.appendChild(deleteItem);
+                dropdownDiv.appendChild(dropdownButton);
+                dropdownDiv.appendChild(dropdownMenu);
+
+                listItem.appendChild(itemDiv);
+                listItem.appendChild(dropdownDiv);
+                upcomingList.appendChild(listItem);
+            });
+            playQueueBody.appendChild(upcomingList);
+        }
+    }
+
+    audioPlayer.addEventListener('ended', function() {
+        playedQueue.push(currentSong);
+        if (upcomingQueue.length === 0 ) {
+            playButton.style.display = 'inline-block';
+            currentSong = {};
+            audioPlayer.removeAttribute('controls');
+        } else{
+            currentSong = upcomingQueue.shift();
+            audioPlayer.src = currentSong.url;
+            songImage.src = currentSong.image;
+            songName.innerHTML = currentSong.title;
+            audioPlayer.play();
+        }
+        playQueueBodyView();
+    });
+
+    function previousSong() {
+        if (playedQueue.length === 0) {
+            alert('No previous song in the played queue!');
+            return;
+        } else {
+            if (currentSong.title) {
+                upcomingQueue.unshift(currentSong);
+            }
+            currentSong = playedQueue.pop();
+            audioPlayer.src = currentSong.url;
+            songImage.src = currentSong.image;
+            songName.innerHTML = currentSong.title;
+            audioPlayer.setAttribute('controls', 'controls');
+            playButton.style.display = 'none';
+            audioPlayer.play();
+            playQueueBodyView();
+        }
+    }
+
+    function nextSong() {
+        if (upcomingQueue.length === 0) {
+            alert('No next song in the upcoming queue!');
+            return;
+        } else {
+            playedQueue.push(currentSong);
+            currentSong = upcomingQueue.shift();
+            audioPlayer.src = currentSong.url;
+            songImage.src = currentSong.image;
+            songName.innerHTML = currentSong.title;
+            audioPlayer.play();
+            playQueueBodyView();
+        }
+    }
+
+    function clearQueue() {
+        upcomingQueue = [];
+        playedQueue = [];
+        audioPlayer.src = '';
+        songImage.src = '';
+        songName.innerHTML = '';
+        playButton.style.display = 'inline-block';
+        audioPlayer.removeAttribute('controls');
+        playQueueBodyView();
+    }
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // array2 = array1.concat(array2);
+
+    function shufflePlaylist() {
+        upcomingQueue = shuffleArray(upcomingQueue);
+        playQueueBodyView();
+    }
+
+    function shuffleEntirePlaylist() {
+        console.log(`${upcomingQueue.length} | ${playedQueue.length}`);
+        upcomingQueue = playedQueue.concat(upcomingQueue);
+        console.log(`${upcomingQueue.length} | ${playedQueue.length}`);
+        playedQueue = [];
+        upcomingQueue = shuffleArray(upcomingQueue);
+        playQueueBodyView();
+    }
+
+    function playAll() {
+        upcomingQueue = defaultPlayQueue;
+        playSong();
+    }
+
+    function shuffleAll() {
+        upcomingQueue = shuffleArray(defaultPlayQueue);
+        playSong();
+    }
+
+</script>
+{% endblock scripts %}

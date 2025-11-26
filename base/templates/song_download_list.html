@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3 class="mt-4 mb-5">Download Songs as JSON</h3>
+
+<form id="downloadForm" method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    <button type="button" class="btn btn-sm btn-secondary me-2" onclick="selectAll()">Select All</button>
+    <button type="button" class="btn btn-sm btn-danger me-2" onclick="selectFavorites()">Select Favorites</button>
+    <button type="submit" class="btn btn-sm btn-success">Download JSON</button>
+  </div>
+
+  <ul class="list-group mb-3">
+    {% for song in songs %}
+    <li class="list-group-item">
+      <label class="d-flex align-items-center gap-3">
+        <input type="checkbox"
+              name="songs"
+              value="{{ song.id }}"
+              class="song-checkbox"
+              data-favorite="{{ song.favorite|yesno:'1,0' }}">
+
+        {% if song.single_image %}
+          <img src="{{ song.single_image }}" class="rounded" width="50" alt="">
+        {% elif song.album.album_image %}
+          <img src="{{ song.album.album_image }}" class="rounded" width="50" alt="">
+        {% endif %}
+
+        <span>{{ song.title }}</span>
+      </label>
+    </li>
+
+    {% endfor %}
+  </ul>
+
+  <button type="submit" class="btn btn-sm btn-success mb-5">Download JSON</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectAll() {
+  document.querySelectorAll('.song-checkbox').forEach(cb => cb.checked = true);
+}
+
+function selectFavorites() {
+  document.querySelectorAll('.song-checkbox').forEach(cb => {
+    cb.checked = cb.dataset.favorite === "1";
+  });
+}
+
+document.getElementById('downloadForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+
+  fetch("{% url 'download-songs' %}", {
+    method: 'POST',
+    headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'songs.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+});
+</script>
+{% endblock %}

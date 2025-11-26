@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3 class="mt-5 mb-5">{{page_title}}</h3>
+{% if type == 'playlist' %}
+<p class="mt-2">{{playlist.songs.count}} Song(s)</p>
+<div class="demo-inline-spacing my-2">
+    <a href="{% url 'playlist-add-songs' playlist.id %}" class="btn btn-primary me-2"><i class="bi bi-music-note-list"></i> Add Songs</a>
+    <a href="{% url 'delete-playlist' playlist.id %}" class="btn btn-danger me-2"><i class="bi bi-trash-fill"></i></a>
+</div>
+{% endif %}
+<div class="mt-3" id="songsList">
+    <input class="search form-control mb-4" placeholder="Search by title...">
+    <ul class="list-group list-group-flush list mb-3">
+        {% for song in songs %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div class="me-auto row">
+                <div class="ps-1 col-auto">
+                    {% if song.single_image %}
+                    <div class="me-auto">
+                        <img src="{{ song.single_image }}" class="rounded" width="50" alt="">
+                    </div>
+                    {% elif song.album.album_image %}
+                    <div class="me-auto my-auto py-2">
+                        <img src="{{ song.album.album_image }}" class="rounded" width="50" alt="">
+                    </div>
+                    {% else %}
+                    <span></span>
+                    {% endif %}
+                </div>
+                <div class="ps-0 col">
+                    <div class="fw-bold name">{{song.title}}</div>
+                    {% if song.album %}
+                        <p class="mb-0 fst-italic album">{{song.album}}</p>
+                    {% endif %}
+                    {% if song.artist %}
+                        <p class="mb-0 artist">{{song.artist}}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    {% if song.favorite %}
+                    <li><a href="{% url 'song-favorite' song.id %}" class="dropdown-item"><i class="bi bi-heartbreak-fill"></i> Remove from favorite</a></li>
+                    {% else %}
+                    <li><a href="{% url 'song-favorite' song.id %}" class="dropdown-item"><i class="bi bi-heart-fill"></i> Add to favorite</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'update-song-playlists' song.id %}?next={{ request.path }}" class="dropdown-item"><i class="bi bi-bookmark-plus-fill"></i> Add to playlist</a></li>
+                    <li><a href="{% url 'edit-song' song.id %}" class="dropdown-item"><i class="bi bi-pencil-fill"></i> Edit</a></li>
+                </ul>
+            </div>
+        </li>
+        {% empty %}
+        <p>No songs in this list</p>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+<script>
+  const options = {
+    valueNames: ['name', 'album', 'artist'],
+  };
+  const userList = new List('songsList', options);
+</script>
+{% endblock scripts %}
