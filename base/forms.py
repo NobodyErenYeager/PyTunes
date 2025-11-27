@@ -1,5 +1,9 @@
 from django.forms import ModelForm
-from .models import Album, Song, Playlist
+from .models import (
+    Album, Song, Playlist, StorageService, StorageLink, 
+    Podcast, PodcastEpisode, PodcastStorageLink,
+    AudioBook, AudioBookChapter, AudioBookStorageLink
+)
 
 
 class AlbumForm(ModelForm):
@@ -28,3 +32,24 @@ class PlaylistForm(ModelForm):
     class Meta:
         model = Playlist
         fields = ['title']
+
+
+class StorageServiceForm(ModelForm):
+    class Meta:
+        model = StorageService
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(StorageServiceForm, self).__init__(*args, **kwargs)
+        self.fields['url'].widget.attrs.update({'rows': 1})
+        self.fields['icon'].widget.attrs.update({'rows': 1})
+
+
+class StorageLinkForm(ModelForm):
+    class Meta:
+        model = StorageLink
+        fields = "__all__"
+    
+    def __init__(self, *args, **kwargs):
+        super(StorageLinkForm, self).__init__(*args, **kwargs)
+        self.fields['link'].widget.attrs.update({'rows': 1})

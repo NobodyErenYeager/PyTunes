@@ -35,6 +35,7 @@ class Playlist(models.Model):
 
 class StorageService(models.Model):
     name = models.CharField(max_length=1000)
+    url = models.TextField(null=True, blank=True)
     icon = models.TextField(null=True, blank=True)
 
     def __str__(self):

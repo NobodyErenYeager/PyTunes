@@ -26,6 +26,12 @@ urlpatterns = [
     path('playlist/<int:playlist_id>/add-songs/', views.playlist_add_songs, name='playlist-add-songs'),
     path('songs/download/', views.download_song_list, name='download-songs'),
     path('player/', views.player, name='player'),
+    path('storage-service/', views.storage_service_list, name="storage_service_list"),
+    path('storage-service/add/', views.add_storage_service, name="add_storage_service"),
+    path('storage-service/edit/<int:service_id>/', views.edit_storage_service, name="edit_storage_service"),
+    path('storage-service/add-link/<int:album_id>/', views.add_storage_link, name="add_storage_link"),
+    path('storage-service/edit-link/<int:link_id>/', views.edit_storage_link, name="edit_storage_link"),
+    path('storage-service/delete-link/<int:link_id>/', views.delete_storage_link, name="delete_storage_link"),
 
     # /////////////////////////// API Endpoints ///////////////////////
     path('api/albums/', AlbumListCreateAPIView.as_view(), name='album-list-create'),

@@ -1,6 +1,10 @@
 from django.shortcuts import render, redirect
 from rest_framework import generics
-from .models import Album, Song, Playlist
+from .models import (
+    Album, Song, Playlist, StorageService, StorageLink, 
+    Podcast, PodcastEpisode, PodcastStorageLink,
+    AudioBook, AudioBookChapter, AudioBookStorageLink
+)
 from .serializers import AlbumSerializer, SongSerializer, PlaylistSerializer
 from django.db.models import Value, CharField
 from . import forms
@@ -229,6 +233,87 @@ def player(request):
     # print(default_play_queue)
     return render(request, 'player.html', {'songs': songs, 'default_play_queue': json.dumps(default_play_queue)})
 
+
+def storage_service_list(request):
+    storage_services = StorageService.objects.all()
+    return render(request, 'storage_services.html', {'storage_services': storage_services})
+
+
+def add_storage_service(request):
+    form = forms.StorageServiceForm()
+    if request.method == "POST":
+        form = forms.StorageServiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('storage_service_list')
+    context = {
+        "form": form,
+        "form_title": "Add Storage Service"
+    }
+    return render(request, 'form.html', context)
+
+
+def edit_storage_service(request, service_id):
+    service = StorageService.objects.get(id=service_id)
+    form = forms.StorageServiceForm(instance=service)
+    if request.method == "POST":
+        form = forms.StorageServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect('storage_service_list')
+    context = {
+        "form": form,
+        "form_title": "Edit Storage Service"
+    }
+    return render(request, 'form.html', context)
+
+
+def add_storage_link(request, album_id):
+    try:
+        album = Album.objects.get(id=album_id)
+    except Album.DoesNotExist:
+        return redirect('home')
+    form = forms.StorageLinkForm(initial={"album": album})
+    if request.method == "POST":
+        form = forms.StorageLinkForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('album', album_id)
+    context = {
+        "form": form,
+        "form_title": "Add Link"
+    }
+    return render(request, 'form.html', context)
+
+
+def edit_storage_link(request, link_id):
+    try:
+        link = StorageLink.objects.get(id=link_id)
+    except StorageLink.DoesNotExist:
+        return redirect('home')
+    form = forms.StorageLinkForm(instance=link)
+    if request.method == "POST":
+        form = forms.StorageLinkForm(request.POST, instance=link)
+        if form.is_valid():
+            form.save()
+            return redirect('album', link.album.id)
+    
+    context = {
+        'form': form,
+        'form_page': "Edit Link"
+    }
+    return render(request, 'form.html', context)
+
+
+def delete_storage_link(request, link_id):
+    try:
+        link = StorageLink.objects.get(id=link_id)
+    except StorageLink.DoesNotExist:
+        return redirect('home')
+    
+    album_id = link.album.id
+    link.delete()
+    return redirect('album', album_id)
 
 # /////////////////////////// API Views ///////////////////////////
 # Album Views

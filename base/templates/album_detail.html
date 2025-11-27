@@ -21,6 +21,47 @@
             <div class="col-auto">
                 <a href="{% url 'edit-album' album.id %}" class="btn btn-primary"><i class="bi bi-pencil-fill"></i></a>
             </div>
+            <div class="col-auto">
+                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#storageLinkModal"><i class="bi bi-link"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="storageLinkModal" tabindex="-1" aria-labelledby="storageLinkModalTitle">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="storageLinkModalTitle">Storage Links</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group list-group-flush">
+                        {% for link in album.storage_links.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <a href="{{ link.link|safe }}" target="_blank" class="btn btn-sm btn-danger">
+                                        {{link.service.icon|safe}} {{link.service.name}} {% if link.note %}({{link.note}}){% endif %}
+                                    </a>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <a href="{% url 'edit_storage_link' link.id %}" class="btn btn-sm btn-primary"><i class="bi bi-pencil-fill"></i></a>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a href="{% url 'delete_storage_link' link.id %}" class="btn btn-sm btn-primary"><i class="bi bi-trash-fill"></i></a>
+                                    </div>
+                                </div>
+                            </li>
+                        {% empty %}
+                    </ul>
+                    <p>No links found</p>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="{% url 'add_storage_link' album.id %}" class="btn btn-primary">Add Link</a>
+                </div>
+            </div>
         </div>
     </div>
 
